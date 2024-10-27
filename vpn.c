@@ -236,19 +236,28 @@ void decrypt(char *ciphertext, char *plantext, int len) {
 }
 
 
+/**
+ * 1.Create tun device and vpn interface named tun0
+ * 2.use ifconfig to setup ip and net mask for tun0
+ * 3.setup iptable in and out rules
+ * 4.encode data from tun0 and send by udp / decode data from udp and write to tun0
+ * 5.close tun0 and udp when catch kill sigal
+ */
 int main(int argc, char **argv) {
   int tun_fd;
+
+  // Create tun device, what is ifreq
   if ((tun_fd = tun_alloc()) < 0) {
     return 1;
   }
 
-  ifconfig();
-  setup_route_table();
+  ifconfig(); // ifconfig tun0 10.8.0.1/16 mtu %d up
+  setup_route_table();  // setup net route in and out
   cleanup_when_sig_exit();
 
 
   int udp_fd;
-  struct sockaddr_storage client_addr;
+  struct sockaddr_storage client_addr; // what's the difference between sockaddr_storage and sockaddr
   socklen_t client_addrlen = sizeof(client_addr);
 
   if ((udp_fd = udp_bind((struct sockaddr *)&client_addr, &client_addrlen)) < 0) {
